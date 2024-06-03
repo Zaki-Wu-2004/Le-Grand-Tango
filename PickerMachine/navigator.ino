@@ -11,6 +11,10 @@ int stepPin=stepYPin;
 int dirPin=dirYPin;
 int x_cur=0;
 int y_cur=0;
+int x_read=0;
+int y_read=0;
+int x=0;
+int y=0;
 const int stepsPerRev=200;
 int pulseWidthMicros = 70; 	// microseconds
 int millisBtwnSteps = 70;
@@ -21,47 +25,67 @@ void setup() {
  	pinMode(stepPin, OUTPUT);
  	pinMode(dirPin, OUTPUT);
   servoUpDown.attach(11);
+  Serial.println("Arduino is ready"); // Print a message when ready
 }
 void loop() {
-  for(int i=0;i<3;i++)
-  {
-    int x_read = Serial.parseInt();
-    int y_read = Serial.parseInt();
-    int x=0;
-    int y=0;
-  //calculate the relative distance from the previous point
-  //the picker won't move if there is no input, whose value is by default 0 in the arduino uno case
- 	  if(x_read!=0||y_read!=0)
-    {
+  if (Serial.available() > 0) { // Check if data is available to read
+    String data = Serial.readString(); // Read the incoming data
+    Serial.println("Received: " + data); // Print the received data
+    
+    // Parse coordinate data
+    int index = 0;
+    int i=0;
+    while ((index = data.indexOf(';')) != -1) {
+      String coordinate = data.substring(0, index);
+      data = data.substring(index + 1);
+      Serial.println("moving towards: (" + coordinate + ")"); // Process single coordinate
+      Serial.println(i);
+      int commaIndex = coordinate.indexOf(',');
+      if (commaIndex != -1) {
+        String xStr = coordinate.substring(0, commaIndex);
+        String yStr = coordinate.substring(commaIndex + 1);
+        
+        x_read = xStr.toInt(); // Convert x coordinate to integer
+        y_read = yStr.toInt(); // Convert y coordinate to integer
+        
+      } else {
+        Serial.println("Invalid coordinate format");
+      }
       x=x_read-x_cur;
       y=y_read-y_cur;
       x_cur=x_read;
       y_cur=y_read;
+      moveX(x);
+      moveY(y);
+      dip(i);
+      i=i+1;
     }
-    moveX(x);
-    moveY(y);
-    dip(i);//1-取枪头、点样
+    i=0;
+    if (data.length() > 0) { // Process the last coordinate
+      Serial.println("Coordinate: " + data);
+      String coordinate = data;
+      int commaIndex = coordinate.indexOf(',');
+      if (commaIndex != -1) {
+        String xStr = coordinate.substring(0, commaIndex);
+        String yStr = coordinate.substring(commaIndex + 1);
+        
+        x_read = xStr.toInt(); // Convert x coordinate to integer
+        y_read = yStr.toInt(); // Convert y coordinate to integer
+        
+      } else {
+        Serial.println("Invalid coordinate format");
+      }
+      x=x_read-x_cur;
+      y=y_read-y_cur;
+      x_cur=x_read;
+      y_cur=y_read;
+      moveX(x);
+      moveY(y);
+      dip(3);
+    }
+    Serial.println("round complete");
+    delay(2000);
   }
-  int x_read = Serial.parseInt();
-  int y_read = Serial.parseInt();
-  int x=0;
-  int y=0;
-  //calculate the relative distance from the previous point
-  //the picker won't move if there is no input, whose value is by default 0 in the arduino uno case
- 	if(x_read!=0||y_read!=0)
-  {
-    x=x_read-x_cur;
-    y=y_read-y_cur;
-    x_cur=x_read;
-    y_cur=y_read;
-  }
-  moveX(x);
-  moveY(y);
-  // Serial.println(x_cur);
-  // Serial.println(y_cur);
-  dip(3);//2-退枪头
-  Serial.println("round complete");
-  delay(2000);
 }
 
 void moveY(int y)
@@ -130,22 +154,22 @@ void dip(int mode)
   if(mode==1)
   {
     servoUpDown.write(60);
-    delay(400);
+    delay(300);
     servoUpDown.write(90);
     delay(1000);
     servoUpDown.write(120);
-    delay(600); 
+    delay(500); 
     servoUpDown.write(90);
     delay(1000);
   }
   if(mode==2)
   {
     servoUpDown.write(60);
-    delay(400);
+    delay(300);
     servoUpDown.write(90);
     delay(1000);
     servoUpDown.write(120);
-    delay(600); 
+    delay(500); 
     servoUpDown.write(90);
     delay(1000);
   }
