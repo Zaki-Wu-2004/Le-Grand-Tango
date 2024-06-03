@@ -34,7 +34,7 @@ try:
     while True:
         # Example coordinate data
         #coordinates = [(0, 0), (-30, -30), (3, -32), (15, 0)]
-        #0 0 -30 -30 3 -32 15 0 this is a set of coordinate that survives the test
+        #0 0 -30 -30 3 -32 15 0 this is a set of coordinate that survives the test, the (0, 0) refers to 枪头盒最右侧第三个孔处
         coordinates = get_user_coordinates()
         print(coordinates)
         print(f"Sending coordinates: {coordinates}")
